@@ -19,9 +19,12 @@ class File:
             open(file_name,"x")
         return path_to_file
 
+    def __str__(self):
+        return  self.path_to_file
 
 
 file_name = "text.tmp"
 file_obj = File(file_name)
 print(os.path.exists(file_name))
+print(file_obj)
 
