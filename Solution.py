@@ -22,27 +22,32 @@ class File:
         if os.path.isfile(self.path_to_file):
             with open(self.path_to_file, "w",encoding="utf-8") as f:
                 f.write(string)
+        return len(string)
 
 
 
     def chek_file(self,path_to_file):
         self.path_to_file = path_to_file;
-        if os.path.exists(file_name):
+        if os.path.exists(self.path_to_file):
             pass
         else:
-            open(file_name,"x")
-        return path_to_file
+            open(self.path_to_file,"x")
+        return self.path_to_file
 
 
     def __str__(self):
         return  os.path.abspath(self.path_to_file)
 
 
-file_name = "text.tmp"
-file_obj = File(file_name)
-print(os.path.exists(file_name))
-print(file_obj)
-print(file_obj.read())
-file_obj.write("Some text")
-print(file_obj.read())
+file_name = "text"
 
+print(os.path.exists(file_name + "_1"))
+file_obj_1 = File(file_name + "_1")
+print(os.path.exists(file_name + "_1"))
+file_obj_2 = File(file_name + "_2")
+print(file_obj_1.write('trhyrtrth'))
+print(file_obj_1)
+print(file_obj_1.read())
+print(file_obj_2.write('l55y5'))
+print(file_obj_2)
+print(file_obj_2.read())
