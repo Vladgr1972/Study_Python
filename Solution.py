@@ -41,19 +41,19 @@ class File:
             f.write(sum_txt)
         return File(tmp_file)
 
+    def __iter__(self):
+        self.seek_f = 0
+        return self
+
+    def __next__(self):
+        file_text = open(self.path_to_file,"r")
+        file_text.seek(self.seek_f)
+        file_line = file_text.readline()
+        self.seek_f = file_text.tell()
+        file_text.close()
+        if not file_line:
+            raise StopIteration
+        return file_line
 
 
-
-file_name = "text"
-file_obj_1 = File(file_name + "_1")
-file_obj_2 = File(file_name + "_2")
-print(file_obj_1.write('line 1\n'))
-print(file_obj_1.read())
-print(file_obj_2.write('line 2\n'))
-print(file_obj_2.read())
-print(type(file_obj_1))
-new_file_obj = file_obj_1 + file_obj_2
-print(new_file_obj)
-print(type(new_file_obj))
-print(new_file_obj)
 
