@@ -1,6 +1,6 @@
 import os
-import sys
 import tempfile
+import random
 
 
 
@@ -39,7 +39,7 @@ class File:
 
         #os.chdir(tmp_file_dir)
         tmp_file = tempfile.NamedTemporaryFile()
-        tmp_file = self.chek_file(tmp_file.name)
+        tmp_file = self.chek_file(tmp_file.name+'_borned_from_sovet_union'+str(random.randint(1,999999999)))
         with open(tmp_file,"w",encoding="utf-8") as f:
             f.write(sum_txt)
         return File(tmp_file)
@@ -60,7 +60,7 @@ class File:
 
 
 path_to_file = 'some_filename'
-
+"""
 os.path.exists(path_to_file)
 
 file_obj = File(path_to_file)
@@ -77,6 +77,7 @@ file_obj.read()
 file_obj.write('other text')
 
 file_obj.read()
+"""
 
 file_obj_1 = File(path_to_file + '_1')
 file_obj_2 = File(path_to_file + '_2')
@@ -98,9 +99,11 @@ os.path.exists(new_path_to_file)
 file_obj_3 = File(new_path_to_file)
 print(file_obj_3)
 
+"""
 
 
-'''
 if __name__ == '__main__':
     pass
-'''
+
+"""
+
