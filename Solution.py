@@ -36,7 +36,10 @@ class File:
     def __add__(self, other):
         sum_txt = self.read() + other.read()
         tmp_file_dir = tempfile.gettempdir()
-        tmp_file = self.chek_file(os.path.join(tmp_file_dir, self.path_to_file + "_" + other.path_to_file))
+
+        #os.chdir(tmp_file_dir)
+        tmp_file = tempfile.NamedTemporaryFile()
+        tmp_file = self.chek_file(tmp_file.name)
         with open(tmp_file,"w",encoding="utf-8") as f:
             f.write(sum_txt)
         return File(tmp_file)
@@ -56,4 +59,48 @@ class File:
         return file_line
 
 
+path_to_file = 'some_filename'
 
+os.path.exists(path_to_file)
+
+file_obj = File(path_to_file)
+os.path.exists(path_to_file)
+
+print(file_obj)
+
+file_obj.read()
+
+file_obj.write('some text')
+
+file_obj.read()
+
+file_obj.write('other text')
+
+file_obj.read()
+
+file_obj_1 = File(path_to_file + '_1')
+file_obj_2 = File(path_to_file + '_2')
+file_obj_1.write('line 1\n')
+
+file_obj_2.write('line 2\n')
+
+new_file_obj = file_obj_1 + file_obj_2
+isinstance(new_file_obj, File)
+
+print(new_file_obj)
+
+for line in new_file_obj:
+    print(ascii(line))
+
+new_path_to_file = str(new_file_obj)
+os.path.exists(new_path_to_file)
+
+file_obj_3 = File(new_path_to_file)
+print(file_obj_3)
+
+
+
+'''
+if __name__ == '__main__':
+    pass
+'''
