@@ -1,0 +1,61 @@
+import socket
+import time
+
+class ClientError(Exception):
+    pass
+
+class ClientSocketError(ClientError):
+    pass
+
+class Client:
+    def __init__(self, host, port, timeout=None):
+        self.host = host
+        self.port = port
+        self.timeout = timeout
+
+        try:
+            self.sock = socket.create_connection((self.host, self.port), self.timeout)
+        except socket.error as error:
+            raise ClientSocketError("Connection get error", error)
+
+    def get(self):
+        pass
+
+    def put(self, name, metric_value, timestump=None):
+        self.name = name
+        self.metric_value = float(metric_value)
+        timestump = self._shek_time_(timestump)
+        #string_byte = str(self.name + self.metric_value + self.timestump).encode()
+        try:
+            self.sock.sendall(f"put {name} {metric_value} {timestump}\n".encode())
+        except socket.error as error:
+            raise ClientSocketError("Data put with error ", error)
+
+
+
+
+
+    def _shek_time_(self,timestump):        #check timestump == None or != None
+        if timestump == None:
+            return int(time.time())
+        else:
+            return int(timestump)
+
+    def _translate_(self,string):
+        pass
+
+    def close(self):
+        try:
+            self.sock.close()
+        except socket.error as error:
+            raise ClientSocketError("Connection closed with error",error)
+        pass
+
+
+
+
+client1 = Client("127.0.0.1",8888)
+client1.put("eadrum.cpu",4)
+client1.close()
+
+
