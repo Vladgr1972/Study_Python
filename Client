@@ -18,21 +18,27 @@ class Client:
         except socket.error as error:
             raise ClientSocketError("Connection get error", error)
 
+    def _answer_server(self): # recive answer from server
+        try:
+            data = self.sock.recv(1024)
+        except socket.error as error:
+            raise ClientSocketError("error recive answ", error)
+        print(data.decode())
+
+
     def get(self):
         pass
 
-    def put(self, name, metric_value, timestump=None):
+    def put(self, name, metric_value, timestump=None):  # send date to server and recive ansver from there
         self.name = name
         self.metric_value = float(metric_value)
         timestump = self._shek_time_(timestump)
-        #string_byte = str(self.name + self.metric_value + self.timestump).encode()
+        string_byte = ("put " + str(self.name) + " " + str(self.metric_value) + " " + str(timestump) + " \n").encode()
         try:
-            self.sock.sendall(f"put {name} {metric_value} {timestump}\n".encode())
+            self.sock.sendall(string_byte)
         except socket.error as error:
             raise ClientSocketError("Data put with error ", error)
-
-
-
+        self._answer_server()
 
 
     def _shek_time_(self,timestump):        #check timestump == None or != None
@@ -52,10 +58,11 @@ class Client:
         pass
 
 
-
-
 client1 = Client("127.0.0.1",8888)
 client1.put("eadrum.cpu",4)
+client1.put("eadrum.cpu",4,465456456)
+client1.put("HDD.speed",8)
+
 client1.close()
 
 
