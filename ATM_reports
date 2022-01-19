@@ -1,19 +1,102 @@
 import os
+import openpyxl
 from openpyxl import load_workbook
 
 
-file_name_reports = 'detail.xlsx'
-path_name = "d:\\temp\\2022\\reports\\in"
+class LoadData:
+
+    def __init__(self, path, file_name, list_atm):
+        self.file_name = file_name
+        self.file_list_atm = list_atm
+        self.path = path
+        self.date_report, self.list_atm = self._load_data()
+        self.dict_atm = self._create_list_atm()
+
+    def __str__(self):
+        return self.date_report
+
+    def get_data(self):
+        return self.date_report, self.list_atm
+
+    """ Loading data from the file detail.xlsx and creating a list of data to be transmitted for further processing"""
+    def _load_data(self):
+        list_atm = []
+        wb = load_workbook(self.file_name)
+        list_sheets = wb.sheetnames
+        sheet0 = wb[list_sheets[0]]
+        sheet1 = wb[list_sheets[1]]
+        for i in range(2, sheet0.max_row + 1):
+            id_atm = sheet0.cell(row=i, column=2).value
+            sum_proc = sheet0.cell(row=i, column=sheet0.max_column - 1).value + \
+                       sheet0.cell(row=i, column=sheet0.max_column).value
+            sum_card = sheet1.cell(row=i, column=sheet1.max_column - 1).value + \
+                       sheet1.cell(row=i, column=sheet1.max_column).value
+            sum_un_used_card = sum_card * (100 / sum_proc) - sum_card
+            model_atm = sheet0.cell(row=i, column=6).value
+            name_atm = sheet0.cell(row=i, column=5).value
+            list_atm.append((id_atm, name_atm, model_atm, sum_proc, sum_card, sum_un_used_card))
+        date_reports = sheet0.cell(row=2, column=10).value.replace('.', '') + '_' + \
+                       sheet0.cell(row=2, column=11).value.replace('.', '')
+        return date_reports, list_atm
+
+    def _create_list_atm(self):
+        """ Create dict of atm from file list_atm.xlsx """
+        atm_dict = {}
+        wb = load_workbook(self.file_list_atm)
+        list_sheets = wb.sheetnames
+        for elem in list_sheets:
+            sheet = wb[elem]
+            for i in range(2, sheet.max_row + 1):
+                if elem not in atm_dict:
+                    atm_dict[elem] = (sheet.cell(row=i, column=1).value,)
+                else:
+                    atm_dict[elem] += (sheet.cell(row=i, column=1).value,)
+        return atm_dict
 
 
-def start_reports(file_name_reports):
-    date_reports, list_atm = load_date(file_name_reports)
-    dict_atm = create_list_atm()
-    not_used_atm = check_dict_atm(list_atm, dict_atm)
-    if len(not_used_atm) != 0:
-        print(not_used_atm)
-    # print(dict_atm)
-    output_date(list_atm, date_reports)
+class Output_data:
+
+    def __init__(self, path):
+        self.path = path
+        os.chdir(self.path)
+
+    def chek_file(self, *file_name):
+        self.file_name = set(file_name)
+        files_by_path = set(os.listdir(self.path))
+        flag = (self.file_name & files_by_path) == self.file_name
+        if not flag:
+            print(f"The file {self.file_name - (self.file_name & files_by_path)} "
+                  f" is missing in the directory '{self.path}'")
+        return flag
+
+    def output_date(self, list_atm, date_reports):
+        self.list_atm = list_atm
+
+        file_name = Services.file_name("report_", date_reports, ".xlsx")
+        print(file_name)
+        if self.chek_file(file_name):
+            # os.chdir(self.path)
+            os.remove(file_name)
+            print(f"{file_name} in {self.path} is removed ")
+        else:
+            pass
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        sheet.title = "Список банкоматов"
+        sheet.append(('ID ATM', 'Name ATM', 'Model', ' % Dostupn', ' Used Cards', 'Not Used Cards'))
+        for el in list_atm:
+            sheet.append(el)
+
+        os.chdir(self.path)
+        wb.save(file_name)
+
+class Services:
+    def __init__(self):
+        pass
+
+    def file_name(*word):
+        print(word)
+        return "".join(word)
 
 
 def check_dict_atm(list_atm, dict_atm):
@@ -30,66 +113,62 @@ def check_dict_atm(list_atm, dict_atm):
             list_not_used_atm.append((el_list[0], el_list[1]))
     return list_not_used_atm
 
-
-def load_date(file_name):
-    """ Loading data from the file detail.xlsx and creating a list of data to be transmitted for further processing"""
-    list_atm = []
-    wb = load_workbook(file_name)
-    list_sheets = wb.sheetnames
-    sheet0 = wb[list_sheets[0]]
-    sheet1 = wb[list_sheets[1]]
-    for i in range(2, sheet0.max_row + 1):
-        id_atm = sheet0.cell(row=i, column=2).value
-        sum_proc = sheet0.cell(row=i, column=sheet0.max_column - 1).value + \
-            sheet0.cell(row=i, column=sheet0.max_column).value
-        sum_card = sheet1.cell(row=i, column=sheet1.max_column - 1).value + \
-            sheet1.cell(row=i, column=sheet1.max_column).value
-        sum_un_used_card = sum_card * (100 / sum_proc) - sum_card
-        model_atm = sheet0.cell(row=i, column=6).value
-        name_atm = sheet0.cell(row=i, column=5).value
-        # print(f'{id_atm} {sum_proc} {sum_card} {sum_un_used_card}')
-        list_atm.append((id_atm, name_atm, model_atm, sum_proc, sum_card, sum_un_used_card))
-    date_reports = sheet0.cell(row=2, column=10).value.replace('.', '') + '_' + \
-        sheet0.cell(row=2, column=11).value.replace('.', '')
-    return date_reports, list_atm
-
-
-def check_file(file_name, path):
-    os.chdir(path)
-    if not os.path.isfile(file_name):
-        print(f"The file {file_name} is missing in the directory {path}")
-        flag = False
-    else:
-        flag = True
-    return flag
-
-
-def output_date(date_atm, date_reports):
-    date_atm.sort(key=lambda x: x[3])
-    # print(date_atm)
-    # print(date_reports)
-
-
-def create_list_atm(file_name='list_atm.xlsx', path='d:\\temp\\2022\\reports\\in'):    
-    """ Create dict of atm from file list_atm """
-    atm_dict = {}
-    if check_file(file_name, path):
-        wb = load_workbook(file_name)
-        list_sheets = wb.sheetnames
-        for elem in list_sheets:
-            sheet = wb[elem]
-            for i in range(2, sheet.max_row+1):
-                if elem not in atm_dict:
-                    atm_dict[elem] = (sheet.cell(row=i, column=1).value, )
-                else:
-                    atm_dict[elem] += (sheet.cell(row=i, column=1).value, )
+'''
+def output_date(path, list_atm, date_reports):
+    file_name = "report" + date_reports + ".xlsx"
+    print(file_name)
+    if check_file(path, file_name):
+        os.chdir(path)
+        os.remove(file_name)
+        print(f"{file_name} in {path} is removed ")
     else:
         pass
-    return atm_dict
+    wb = openpyxl.Workbook()
+    sheet = wb.active
+    sheet.title = "Список банкоматов"
+    sheet.append(('ID ATM', 'Name ATM', 'Model', ' % Dostupn', ' Used Cards', 'Not Used Cards'))
+    for el in list_atm:
+        sheet.append(el)
+
+    os.chdir(path)
+    wb.save(file_name)
+'''
+
+def start_reports(file_name_reports):
+    date_reports, list_atm = load_date(file_name_reports)
+    dict_atm = create_list_atm()
+    not_used_atm = check_dict_atm(list_atm, dict_atm)
+    if len(not_used_atm) != 0:
+        print(not_used_atm)
+    # print(dict_atm)
+    output_date(list_atm, date_reports)
+
+
+
+
+
+    """
+    date_atm.sort(key=lambda x: x[3])
+    print(date_atm)
+    print(date_reports)
+    """
 
 
 if __name__ == '__main__':
-    if check_file(file_name_reports, path_name):
-        start_reports(file_name_reports)
+    file_name_reports = 'detail.xlsx'
+    file_list_atm = 'list_atm.xlsx'
+    path_name_in = "d:\\temp\\2022\\reports\\in"
+    path_name_out = "d:\\temp\\2022\\reports\\out"
+    input = Output_data(path_name_in)
+    if input.chek_file(file_list_atm, file_name_reports):
+        data = LoadData(path_name_in, file_name_reports, file_list_atm)
+        print(data.date_report)
+        print(data.list_atm)
+        print(data.dict_atm)
+        not_used_atm = check_dict_atm(data.list_atm, data.dict_atm)
+        if len(not_used_atm) != 0:
+            print(not_used_atm)
+        output = Output_data(path_name_out)
+        output.output_date(data.list_atm, data.date_report)
     else:
         pass
